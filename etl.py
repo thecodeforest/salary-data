@@ -58,6 +58,29 @@ def clean_salary_data(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def main():
+    # COMPANIES = {"apple": "apple+inc",
+    #              "amazon": "amazon"
+
+    # "amazon", "google",
+    #              "linkedin", "uber", "salesforce",
+    #              "microsoft", "facebook", "netflix",
+    #              "airbnb", "twitter", "oracle",
+    #              "samsung", "intel", "ibm",
+    #              "qualcomm", "nvidia", "amd",
+    #              "paypal", "snapchat", "lyft",
+    #              "spotify", "dropbox", "atlassian",
+    #              "slack", "pinterest", "square",
+    #              "yelp", "zillow", "cisco",
+    #              "vmware", "adobe", "box", "workday", "twilio",
+    #              "okta", "splunk", "docusign", "zoom", "cloudera",
+    #              "mongodb", "snowflake", "databricks", "hashicorp",
+    #              "newrelic", "datadog", "sailthru", "salesloft",
+    #              "looker", "segment", "stripe", "instacart",
+    #              "lyft", "doordash", "postmates",
+    #              "robinhood", "coinbase", "roku",
+    #              "asana", "tesla", "palantir",
+
+    #              }
     COMPANIES = ["apple+inc", "amazon", "google",
                  "linkedin", "uber", "salesforce"]
     parser = argparse.ArgumentParser()
@@ -66,9 +89,11 @@ def main():
     args = parser.parse_args()
     urls = create_urls(companies=COMPANIES)
     for url in urls:
+        company_name = url.split("=")[1].split("&")[0].replace("+", " ")
         try:
             salary_df = pd.read_html(url)[0]
             salary_df_clean = clean_salary_data(salary_df)
+            salary_df_clean['employer'] = company_name
             s3_path = prep_s3_path(
                 s3_bucket=args.s3_bucket, df=salary_df_clean)
             wr.s3.to_csv(salary_df_clean, s3_path, index=False)
