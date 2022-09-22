@@ -46,7 +46,7 @@ jobs:
       run: |
         source .venv/bin/activate
 
-        python etl.py --s3_bucket $SEASON_YEAR
+        python etl.py --s3_bucket $S3_BUCKET_NAME
 
     - name: Save logs to S3
       run: | 
