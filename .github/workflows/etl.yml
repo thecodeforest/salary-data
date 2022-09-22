@@ -1,0 +1,57 @@
+name: etl
+
+on: [push]
+
+jobs: 
+  data-pipeline: 
+    name: etl
+    runs-on: ubuntu-latest 
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
+      S3_BUCKET_NAME: h1b-salary-data
+      AWS_DEFAULT_REGION: us-west-2   
+    steps:
+    # check-out the repository so job can access all your code
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with: 
+        python-version: 3.9.13
+        token: ${{ secrets.TOKEN_GITHUB }}
+    # install poetry 
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+        installer-parallel: true
+    # if an environment already exists, load it; otherwise create a new one 
+    - name: Load Cached Virtual Environment
+      id: cached-poetry-dependencies
+      uses: actions/cache@v2
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+    - name: Install dependencies
+      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+    # if no cache exists, install packages 
+      run: poetry install --no-interaction --no-root
+    - name: Install AWS CLI
+      uses: unfor19/install-aws-cli-action@v1
+      with:
+        version: 2 
+        verbose: false      
+    - name: land salary data
+      run: |
+        source .venv/bin/activate
+        python etl.py --s3_bucket $SEASON_YEAR
+
+    - name: Save logs to S3
+      run: | 
+        aws s3 cp "salary-run-$(date +'%Y-%m-%d').log" "s3://$S3_BUCKET_NAME/logs/"
+
+    - name: Final status
+      run: echo "Job Complete"
+
+
