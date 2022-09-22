@@ -42,10 +42,11 @@ jobs:
       with:
         version: 2 
         verbose: false      
-    - name: land salary data
+    - name: collect salary data
       run: |
         source .venv/bin/activate
-        python etl.py --s3_bucket $SEASON_YEAR
+
+        python ./etl.py --s3_bucket $SEASON_YEAR
 
     - name: Save logs to S3
       run: | 
