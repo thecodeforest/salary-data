@@ -44,8 +44,10 @@ def clean_salary_data(df: pd.DataFrame) -> pd.DataFrame:
     df = df[df['base_salary'].apply(lambda x: x.isnumeric())]
     # convert submit date to datetime
     df['submit_date'] = pd.to_datetime(df['submit_date'], format='%m/%d/%Y')
-    # extract year, month, day from submit_date
+    # extract year
     df['submit_year'] = df['submit_date'].dt.year
+    # extract month - for validation
+    df['submit_month'] = df['submit_date'].dt.month
     # drop submit date
     df = df.drop(columns=['submit_date'])
     # extract state from location field. State is last two characters
@@ -82,7 +84,9 @@ def main():
 
     #              }
     COMPANIES = ["apple+inc", "amazon", "google",
-                 "linkedin", "uber", "salesforce"]
+                 "linkedin", "uber", "salesforce",
+                 "netflix", "microsoft"
+                 ]
     parser = argparse.ArgumentParser()
     parser.add_argument("--s3_bucket", type=str,
                         help="Destiation S3 Bucket Name")
